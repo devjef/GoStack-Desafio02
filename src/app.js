@@ -31,7 +31,7 @@ app.get("/repositories", (request, response) => {
 app.post("/repositories", (request, response) => {
   const { title, url, techs } = request.body;
 
-  const newProject = {
+  const newRepository = {
     id: uuid(),
     title: title,
     url: url,
@@ -39,9 +39,9 @@ app.post("/repositories", (request, response) => {
     likes: 0
   };
 
-  repositories.push(newProject);
+  repositories.push(newRepository);
 
-  return response.json(newProject);
+  return response.json(newRepository);
 });
 
 app.put("/repositories/:id", (request, response) => {
@@ -50,12 +50,20 @@ app.put("/repositories/:id", (request, response) => {
   const { title, url, techs } = request.body;
 
   const repoIndex = repositories.findIndex(repo => repo.id === id);
-  
-  const repositorie = { id, title, url, techs };
 
-  repoIndex < 0 ? response.status(400).json({ error: 'Repositorie not found' }) : repositories[repoIndex] = repositorie;
+  if(repoIndex === -1) return response.status(400).json({ error: 'Repository does not exists.' });
   
-  return response.json(repositorie);
+  const repository = {
+    id,
+    title,
+    url,
+    techs,
+    likes: repositories[repoIndex].likes
+  };
+  
+  repositories[repoIndex] = repository;
+
+  return response.json(repository);
 });
 
 app.delete("/repositories/:id", (request, response) => {
@@ -64,7 +72,7 @@ app.delete("/repositories/:id", (request, response) => {
 
   const repoIndex = repositories.findIndex(repo => repo.id === id);
 
-  repoIndex < 0 ? response.status(400).json({ error: 'Repositorie not found' }) : repositories.splice(repoIndex, 1);
+  repoIndex < 0 ? response.status(400).json({ error: 'Repository does not exists.' }) : repositories.splice(repoIndex, 1);
 
   response.status(204).send();
 });
@@ -75,9 +83,9 @@ app.post("/repositories/:id/like", (request, response) => {
 
   const repoIndex = repositories.findIndex(repo => repo.id === id);
 
-  repoIndex < 0 ? response.status(400).json({ error: 'Repositorie not found' }) : repositories[repoIndex].likes += 1;;
+  repoIndex < 0 ? response.status(400).json({ error: 'Repository does not exists.' }) : repositories[repoIndex].likes += 1;;
 
-  response.json({ message: 'Thanks for the Like!'});
+  response.json({ likes: repositories[repoIndex].likes });
 });
 
 module.exports = app;
